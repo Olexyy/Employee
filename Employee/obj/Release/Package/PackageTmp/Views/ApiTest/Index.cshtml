@@ -1,0 +1,180 @@
+﻿@model ApiTestViewModel
+@{
+    ViewBag.Title = "Api Tests Page";
+    string basePath = Html.GetBasePath(); 
+    }
+
+<div class="jumbotron">
+    <h1>API Tests</h1>
+</div>
+
+<div class="row">
+
+    <div class="col-md-12">
+
+        <h2>List of tests</h2>
+        <hr />
+        <p>
+            @Html.ActionLink("All tweets", null, null, new { @class = "btn btn-default all-tweets-link" })
+            @Html.ActionLink("Clear list", null, null, new { @class = "btn btn-default clear-tweets-link" })<br />
+            <div class="all-tweets-content"></div>
+            @Html.ActionLink("Form show", null, null, new { @class = "btn btn-default create-tweet-link-show" })
+            @Html.ActionLink("Form hide", null, null, new { @class = "btn btn-default create-tweet-link-hide" })<br />
+            @Html.ActionLink("3. Task: Ajax submit", "FillAsync", "Data")<br />
+            <hr />
+        </p>
+    </div>
+
+</div>
+@using (Html.BeginForm(String.Empty, String.Empty, FormMethod.Post, new { @class = "ajax-form" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Create tweet</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.Editor("Name", new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessage("Name", "", new { @class = "text-danger" })
+                @Html.TweetDescription("This defines hash tag for tweet.")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Text", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextArea("Text", new { @class = "form-control" })
+                @Html.ValidationMessage("Text", "", new { @class = "text-danger" })
+                @Html.TweetDescription("This defines text of tweet (200 chars max).")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Weight", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBox("Weight", 0,  new { type = "number", @class = "form-control" })
+                @Html.ValidationMessage("Weight", "", new { @class = "text-danger" })
+                @Html.TweetDescription("This defines position of tweet in list.")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("TweetUser", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("TweetUserId", new SelectList(Model.Users, "Id", "Email"), "Select", htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessage("TweetUserId", "", new { @class = "text-danger" })
+                @Html.TweetDescription("This defines channel, tweet belongs to.")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Enabled", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.CheckBox("Enabled", new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessage("Enabled", "", new { @class = "text-danger" })
+                @Html.TweetDescription("This defines whether tweet is visible for others.")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Id", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("Id", new SelectList(Model.Tweets, "Id", "Name"), "Select", htmlAttributes: new { @class = "form-control selected-id" })
+                @Html.ValidationMessage("TweetUserId", "", new { @class = "text-danger" })
+                @Html.TweetDescription("Choose id of tweet to edit in case of tweet update. This will be deleted in case of delete.")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Hidden("Created", DateTime.Now.ToString())
+            @Html.Hidden("Changed", DateTime.Now.ToString())
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default ajax-action-form-create" />
+                <input type="submit" value="Update" class="btn btn-default ajax-action-form-update" />
+                <input type="submit" value="Delete" class="btn btn-default ajax-action-form-delete" />
+            </div>
+        </div>
+    </div>
+}
+@section scripts
+{
+    <script>
+        $(function () {
+            $(".ajax-form").hide();
+            $(".create-tweet-link-show").click(function (e) {
+                e.preventDefault();
+                $(".ajax-form").show();
+            });
+            $(".create-tweet-link-hide").click(function (e) {
+                e.preventDefault();
+                $(".ajax-form").hide();
+            });
+            $(".clear-tweets-link").click(function (e) {
+                e.preventDefault();
+                $(".all-tweets-content").html('');
+            });
+            $(".all-tweets-link").click(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '@Url.RouteUrl("DefaultApi", new { httproute = "", controller = "TweetApi" })',
+                    type: "GET",
+                    success: function (response) {
+                        var html = '';
+                        for (var i = 0; i < response.length; i++) {
+                            html += '<div>';
+                            for (var prop in response[i]) {
+                                if (response[i].hasOwnProperty(prop)) {
+                                    html += '<div class="' + prop + '">';
+                                    html += JSON.stringify(response[i][prop]);
+                                    html += '<div>';
+                                }
+                            }
+                            html += '</div><br />';
+                        }
+                        $(".all-tweets-content").html(html);
+                    },
+                });
+            });
+            $(".ajax-action-form-create").click(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '@Url.RouteUrl("DefaultApi", new { httproute = "", controller = "TweetApi" })',
+                    type: "POST",
+                    data: $('.ajax-form').serialize(),
+                    success: function (response) {
+                    alert("OK" + JSON.stringify(response));
+                    },
+                    fail: function (response) {
+                        alert("FAIL" + JSON.stringify(response));
+                    },
+                });
+            });
+            $(".ajax-action-form-update").click(function (e) {
+                e.preventDefault();
+                var selected = $('.selected-id').val();
+                $.ajax({
+                    url: '@Url.RouteUrl("DefaultApi", new { httproute = "", controller = "TweetApi" })' + '/' + selected,
+                    type: "PUT",
+                    data: $('.ajax-form').serialize(),
+                    success: function (response) {
+                        alert("OK");
+                    },
+                    fail: function (response) {
+                        alert("FAIL");
+                    },
+                });
+            });
+            $(".ajax-action-form-delete").click(function (e) {
+                e.preventDefault();
+                var selected = $('.selected-id').val();
+                $.ajax({
+                    url: '@Url.RouteUrl("DefaultApi", new { httproute = "", controller = "TweetApi" })' + '/' + selected,
+                    type: "DELETE",
+                    success: function (response) {
+                        alert("OK");
+                    },
+                    fail: function (response) {
+                        alert("FAIL");
+                    },
+                });
+            });
+        });
+    </script>
+}

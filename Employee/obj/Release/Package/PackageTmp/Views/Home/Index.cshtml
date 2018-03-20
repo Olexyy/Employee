@@ -1,0 +1,68 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>ASP.NET 5 learning project</h1>
+</div>
+
+<div class="row">
+
+    <div class="col-md-12">
+
+        <label for="autocomplete" class="control-label"> <b>Autocomplete example</b> </label>
+        <input type="text" id="autocomplete" class="form-control" />
+        <div class="suggessions" id="suggessions">  </div>
+        <small class="text-muted"> Powered by Google autocomplete API. </small>  
+
+        <h2>Implemented tasks</h2>
+        <hr />
+        <p>
+            @Html.ActionLink("1. Task: Calculator", "Index", "Calc")<br />
+            @Html.ActionLink("2. Task: Submit form", "Fill", "Data")<br />
+            @Html.ActionLink("3. Task: Ajax submit", "FillAsync", "Data")<br />
+            <hr />
+            @Html.ActionLink("Final. Task: Simple twitter", "Index", "Tweet")<br />
+            <hr />
+        </p>
+        <p>
+            @Html.ActionLink(@"1. Task: Calculator >>", "Index", "Calc", null, new { @class = "btn btn-default" })
+            @Html.ActionLink(@"2. Task: Submit form >>", "Fill", "Data", null, new { @class = "btn btn-default" })
+            @Html.ActionLink(@"3. Task: Ajax submit >>", "FillAsync", "Data", null, new { @class = "btn btn-default" })
+            @Html.ActionLink(@"Final. Task: Simple twitter >>", "Index", "Tweet", null, new { @class = "btn btn-default" })
+        </p>
+
+    </div>
+
+</div>
+
+@section scripts
+{
+    <script>
+
+        $(function () {
+            $("#autocomplete").keyup(function () {
+                makeRequest($(this).val());
+            });
+            $("#autocomplete").blur(function () {
+                $("#suggessions").delay(100).fadeOut();
+            });
+            function makeRequest(input) {
+                $.ajax({
+                    url: "@Url.Action("Autocomplete")",
+                    type: "GET",
+                    data: "input=" + input,
+                    success: function (response) {
+                        $("#suggessions").html(response);
+                        $("#suggessions").show();
+                    },
+                });
+            }
+        });
+        function selectCountry(val) {
+            $("#autocomplete").val(val);
+            $("#suggessions").hide();
+        }
+    
+    </script>
+}

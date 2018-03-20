@@ -1,0 +1,10 @@
+﻿@model IEnumerable<WebApplication.Models.Tweet>
+
+@{ var user = @ViewBag.TweetUser as WebApplication.Models.TweetUser; }
+<div class="jumbotron">
+    <h1>Tweets</h1>
+</div>
+@foreach (var item in Model)
+{
+    @Html.TweetCard(item, user)
+}

@@ -1,0 +1,81 @@
+﻿@model PagedList.IPagedList<WebApplication.Models.Employee>
+@using PagedList.Mvc;
+
+@{
+    ViewBag.Title = "Employee";
+}
+
+<h2>Employees search</h2>
+
+<div class="row">
+    <div class="col-md-12">
+        <p>
+            @Html.ActionLink(@"New Employee >>", "Create", "Employees", null, new { @class = "btn btn-default" })
+            @Html.ActionLink(@"New Department >>", "Create", "Departments", null, new { @class = "btn btn-default" })
+        </p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        @using (Html.BeginForm("Search", "Home", FormMethod.Get, new { @class = "form-inline" }))
+        {
+            <div class="form-horizontal">
+                @Html.Label("Search", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4">
+                    @Html.Editor("Search", new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+                <div class="col-md-6">
+                    <input type="submit" value="Search" class="btn btn-default" />
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <table class="table">
+            <tr>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Active
+                </th>
+                <th>
+                    Depatment
+                </th>
+                <th>Actions</th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Active)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Department.Name)
+                    </td>
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", "Employees", new { id = item.Id }) |
+                        @Html.ActionLink("Details", "Details", "Employees", new { id = item.Id }) |
+                        @Html.ActionLink("Delete", "Delete", "Employees", new { id = item.Id })
+                    </td>
+                </tr>
+            }
+
+        </table>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12">
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+        @Html.PagedListPager(Model, page => Url.Action("Search", "Home", new { page, Search = ViewBag.Search }))
+    </div>
+</div>
